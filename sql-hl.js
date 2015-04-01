@@ -22,7 +22,7 @@ var LEXER = (function() {
             var space = text.match(/^\s/);
             if (space != null ) return forward(space, WHITE);
 
-            var key = text.match(/^(USE|SELECT|INSERT|INTO|FROM|WHERE|VALUES|JOIN|HAVING|GROUP BY| AND |ORDER BY|OR |CREATE|TRUNCATE|DROP)/i);
+            var key = text.match(/^(USE |SELECT|INSERT|INTO|FROM|WHERE|VALUES|JOIN|HAVING|GROUP BY| AND |ORDER BY|OR |CREATE|TRUNCATE|DROP)/i);
             if (key != null ) return forward(key, COLOR_1);
 
             var field = text.match(/^'[^']*'/);
