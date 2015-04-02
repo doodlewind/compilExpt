@@ -5,48 +5,52 @@ function hasValue(arr,obj) {
 // symbols list
 var S = {
     'E': {
-        type: 'NonTerminal',
-        str: 'E'
+        str: 'E',
+        type: 'NonTerminal'
     },
     'E_': {
-        type: 'NonTerminal',
-        str: 'E_'
+        str: 'E_',
+        type: 'NonTerminal'
     },
     'T': {
-        type: 'NonTerminal',
-        str: 'T'
+        str: 'T',
+        type: 'NonTerminal'
     },
     'T_': {
-        type: 'NonTerminal',
-        str: 'T_'
+        str: 'T_',
+        type: 'NonTerminal'
     },
     'F': {
-        type: 'NonTerminal',
-        str: 'F'
+        str: 'F',
+        type: 'NonTerminal'
     },
     'id': {
-        type: 'Terminal',
-        str: 'id'
+        str: 'id',
+        type: 'Terminal'
     },
     '*': {
-        type: 'Terminal',
-        str: '*'
+        str: '*',
+        type: 'Terminal'
     },
     '+': {
-        type: 'Terminal',
-        str: '+'
+        str: '+',
+        type: 'Terminal'
     },
     '(': {
-        type: 'Terminal',
-        str: '('
+        str: '(',
+        type: 'Terminal'
     },
     ')': {
-        type: 'Terminal',
-        str: ')'
+        str: ')',
+        type: 'Terminal'
     },
     '': {
-        type: 'Terminal',
-        str: ''
+        str: '',
+        type: 'Terminal'
+    },
+    '\n': {
+        str: '\n',
+        type: 'Terminal'
     }
 };
 
@@ -62,7 +66,18 @@ var r7 = {'from': S['F'], 'to': [S['id']]};
 var GRAMMAR = [r0, r1, r2, r3, r4, r5, r6, r7];
 
 var FIRST = {'F': [], 'T': [], 'E': [], 'E_': [], 'T_': [], '(': [], ')': [], '*': [], id: [], '+': [], '': []};
-var FOLLOW = {'F': [], 'T': [], 'E': [], 'E_': [], 'T_': [], '(': [], ')': [], '*': [], id: [], '+': [], '': []};
+var FOLLOW = {
+    //'E': [S[')'], S['\n']],
+    //'E_': [S[')'], S['\n']],
+    //'T': [S['+'], S[')'], S['\n']],
+    //'T_': [S['+'], S[')'], S['\n']],
+    //'F': [S['+'], S['*'], S[')'], S['\n']],
+    'E': [],
+    'E_': [],
+    'T': [],
+    'T_': [],
+    'F': []
+};
 
 //correct FIRST set
 //var FIRST = {
@@ -70,12 +85,7 @@ var FOLLOW = {'F': [], 'T': [], 'E': [], 'E_': [], 'T_': [], '(': [], ')': [], '
 //    'T': [S['('], S['id']],
 //    'E': [S['('], S['id']],
 //    'E_': [S['+'], S['']],
-//    //T_: ['*', ''],
-//    //F: [],
-//    //T: [],
-//    //E: [],
-//    //E_: [],
-//    'T_': [],
+//    'T_': [S['*'], S['']],
 //    '(': [S['(']],
 //    ')': [S[')']],
 //    '*': [S['*']],
@@ -91,8 +101,8 @@ function buildFirstTable() {
     while (true) {
         var changed = false;
         for (var s in S) {
-            //console.log("calculate first: " + s);
-            if (buildFirst(S[s])) {
+            // avoid adding end symbol into FIRST table
+            if (s !== '\n' && buildFirst(S[s])) {
                 changed = true;
             }
         }
@@ -133,11 +143,11 @@ function buildFirstTable() {
                         // each of item[0] to item[j] has ɛ in FIRST
                         // their FIRST symbol should be added
                         if (j == 0) {
-                            addIntoFirst(symbol.str, item['to'][0].str);
+                            addToFirst(item['to'][0].str, symbol.str);
                         }
                         else {
                             for (var k = 0; k < j; k++) {
-                                addIntoFirst(symbol.str, item['to'][k].str);
+                                addToFirst(item['to'][k].str, symbol.str);
                             }
                         }
 
@@ -156,7 +166,7 @@ function buildFirstTable() {
         return changed;
 
         // dest and src are in 'X' format (not S['X'])
-        function addIntoFirst(dest, src) {
+        function addToFirst(src, dest) {
             for (var i = 0; i < FIRST[src].length; i++) {
                 if (!hasValue(FIRST[dest], FIRST[src][i])) {
                     changed = true;
@@ -172,7 +182,91 @@ function buildFirstTable() {
     }
 }
 
+function buildFollowTable() {
+    while (true) {
+        var changed = false;
+        var count = 0;
+        for (var s in S) {
+            // avoid adding Terminal into FOLLOW table
+            count++;
+            if (S[s].type === 'NonTerminal' && buildFollow(S[s])) {
+                changed = true;
+            }
+        }
+        if (changed === false) break;
+    }
+    // input a symbol like S['X']
+    //buildFollow(S['E_']);
+    function buildFollow() {
+        var changed = false;
+        // for all NonTerminal, add $ to its FOLLOW
+        if (!hasValue(FOLLOW[GRAMMAR[0]['from'].str], S['\n'])) {
+            changed = true;
+            FOLLOW[GRAMMAR[0]['from'].str].push(S['\n']);
+        }
 
+        for (var i in GRAMMAR) {
+            var rule = GRAMMAR[i]['to'];
+            var j = rule.length - 1;
+
+            // if A → α...B
+            // add FOLLOW(A) to FOLLOW(B)
+            if (rule[j].type === 'NonTerminal') {
+                addFollowToFollow(GRAMMAR[i]['from'].str, rule[rule.length - 1].str);
+            }
+
+            // if A → B C D E F, then FOLLOW(E)←FIRST(F), FOLLOW(D)←FIRST(E)...
+            for (; j > 0; j--) {
+                if (rule[j-1].type === 'NonTerminal') {
+                    addFirstToFollow(rule[j].str, rule[j-1].str);
+                }
+            }
+            //addFirstToFollow(rule[0].str, GRAMMAR[i]['from'].str);
+        }
+
+        // if A → B C D E F G and D E F G have epsilon in their FIRST
+        // add FOLLOW(A) to FOLLOW(C D E F G)
+        for (var k in GRAMMAR) {
+            rule = GRAMMAR[k]['to'];
+            for (j = rule.length - 1; j > 0; j--) {
+                if (!hasValue(FIRST[rule[j].str], S[''])) break;
+            }
+            //console.log("Test: " + GRAMMAR[k]['from'].str + " to " + GRAMMAR[k]['to'][j].str);
+            // BUG HERE! For {E → T E_} no adding E to T performed!
+            for (; j < rule.length; j++) {
+                if (rule[j].type === 'NonTerminal') {
+                    //console.log(GRAMMAR[k]['from'].str + ", " + rule[j].str + " added\n");
+                    addFollowToFollow(GRAMMAR[k]['from'].str, rule[j].str);
+                }
+            }
+        }
+
+        return changed;
+
+        // src and dest are in 'X' format, not S['X']
+        function addFirstToFollow(src, dest) {
+            for (var i = 0; i < FIRST[src].length; i++) {
+                if (!hasValue(FOLLOW[dest], FIRST[src][i]) && FIRST[src][i] !== S['']) {
+                    changed = true;
+                    //console.log("change: addFirstToFollow");
+                    FOLLOW[dest].push(FIRST[src][i]);
+                }
+            }
+        }
+
+        // src and dest are in 'X' format, not S['X']
+        function addFollowToFollow(src, dest) {
+            for (var i = 0; i < FOLLOW[src].length; i++) {
+                if (!hasValue(FOLLOW[dest], FOLLOW[src][i]) && FOLLOW[src][i] !== S['']) {
+                    changed = true;
+                    //console.log("change: addFollowToFollow");
+                    FOLLOW[dest].push(FOLLOW[src][i]);
+                }
+            }
+        }
+    }
+}
 
 buildFirstTable();
-//console.log(FIRST['T']);
+buildFollowTable();
+console.log(FOLLOW);
