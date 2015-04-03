@@ -215,6 +215,10 @@ var buildClosure = (function () {
                 } // tmpItem is one item in J
                 if (tmpItem.length == production['to'].length) {
                     for (var k = 0; k < tmpItem.length; k++) {
+                        // bug fixed, if dot is not at first place, items can't be same
+                        if (J[i][1].type !== '●') {
+                            diff.push(false); break;
+                        }
                         // bug fixed, not comparing type, but str
                         if (tmpItem[k].str === production['to'][k].str) {
                             continue;
@@ -487,8 +491,58 @@ function buildStateTable() {
 }
 
 function buildActionTable() {
-    for (var i = 0; i < GOTO.length; i++ ) {
+        var state = STATE[i];
+        ACTION[i] = {};
+        for (var j = 0; j < state.length; j++) {
+            var item = state[j];
+            shift(item, i);
+        }
+    }
 
+    function shift(item, stateIndex) {
+        for (var i = 0; i < item.length; i++) {
+            if (item[i].str === '●') {
+                // if Dot at end of production, apply reduction
+                if (i == item.length - 1) {
+
+                    var firstSymbol = item[0].str;
+                    for (var s in FOLLOW[firstSymbol]) {
+                        // Add reduction rules
+                        ACTION[stateIndex][FOLLOW[firstSymbol][s].str] = "rNonTerminal";
+                    }
+
+                } else {
+                    // swap position of dot, then search for next state
+                    var tmpItem = clone(item);
+                    var tmp = tmpItem[i];
+                    tmpItem[i] = tmpItem[i+1];
+                    tmpItem[i+1] = tmp;
+                    var searchIndex = searchShift(tmpItem, stateIndex);
+                    if (searchIndex !== -1) {
+                        ACTION[stateIndex][item[i-1].str] = 's' + searchIndex;
+                    }
+                }
+            }
+        }
+    }
+
+    function searchShift(item) {
+        for (var i = 0; i < STATE.length; i++) {
+            if (STATE[i][0].length == item.length) {
+                // compare item with STATE[i]
+                var stateItem = STATE[i][0];
+                for (var j = 0; j < item.length; j++) {
+                    if (item[j].str !== stateItem[j].str) {
+                        break;
+                    }
+                }
+                // if all symbols are equal
+                if (j == item.length) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 }
 
@@ -498,10 +552,13 @@ buildFollowTable();
 
 buildStateTable();
 
-//buildActionTable();
-//logState(STATE.length);
-console.log(STATE.length);
+buildActionTable();
 
+//logState(STATE[4]);
+//console.log(ACTION);
+//console.log(GOTO);
+var newState = buildClosure(STATE[4]);
+logState(STATE[4]);
 //for (var s in STATE) {
 //    console.log("s: " + s + " " + showState(STATE[s]));
 //}
