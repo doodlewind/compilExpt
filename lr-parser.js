@@ -411,10 +411,11 @@ function buildFollowTable() {
     }
 }
 
-function buildGotoTable() {
+function buildStateTable() {
     STATE[0] = buildClosure(AUGMENT);
 
     while (true) {
+        // removing while loop does not affect STATE result
         var changed = false;
         for (var i = 0; i < STATE.length; i++) {
             var state = STATE[i];
@@ -428,8 +429,9 @@ function buildGotoTable() {
 
                 if (GOTO[i][symbol.str] === undefined) {
                     GOTO[i][symbol.str] = STATE.length;
-                    addState(state, symbol);
-                    changed = true;
+                    if (addState(state, symbol)) {
+                        changed = true;
+                    }
                 }
             }
         }
@@ -443,7 +445,7 @@ function buildGotoTable() {
         for (var i = 0; i < state.length; i++) {
             var item = state[i];
             for (var j = 0; j < item.length; j++) {
-                if (item[j].type == '●') {
+                if (item[j].type === '●') {
                     // do not add symbol if production ended
                     if (j+1 in item) {
                         shiftTo.push(item[j+1]);
@@ -464,7 +466,7 @@ function buildGotoTable() {
             for (var j = 0; j < item.length; j++) {
                 if (item[j].type === '●') {
                     // only add item that matches symbol
-                    if (j+1 in item && item[j+1].type === symbol.type) {
+                    if (j+1 in item && item[j+1].str === symbol.str) {
                         var newItem = clone(item);
 
                         // swap Dot with its following symbol
@@ -477,8 +479,10 @@ function buildGotoTable() {
             }
         }
         newState = buildClosure(newState);
+        var before = STATE.length;
         STATE.push(newState);
         STATE = uniqueBy(STATE, JSON.stringify);
+        return !(STATE.length == before);
     }
 }
 
@@ -492,11 +496,11 @@ buildFirstTable();
 
 buildFollowTable();
 
-buildGotoTable();
+buildStateTable();
 
-buildActionTable();
-//logState(STATE[0]);
-console.log(GOTO);
+//buildActionTable();
+//logState(STATE.length);
+console.log(STATE.length);
 
 //for (var s in STATE) {
 //    console.log("s: " + s + " " + showState(STATE[s]));
