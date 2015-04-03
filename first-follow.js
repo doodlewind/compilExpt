@@ -1,6 +1,9 @@
-function hasValue(arr,obj) {
+// for any given grammar in JSON format, this script produces its FIRST and FOLLOW set
+// main function of this script has been integrated into lr-parser.js
+
+var hasValue = function (arr,obj) {
     return (arr.indexOf(obj) != -1);
-}
+};
 
 // symbols list
 var S = {
@@ -53,7 +56,6 @@ var S = {
         type: 'Terminal'
     }
 };
-
 
 var r0 = {'from': S['E'], 'to': [S['T'], S['E_']]};
 var r1 = {'from': S['E_'], 'to': [S['+'], S['T'], S['E_']]};
@@ -182,13 +184,12 @@ function buildFirstTable() {
     }
 }
 
+// run for once, build FOLLOW set for all symbols
 function buildFollowTable() {
     while (true) {
         var changed = false;
-        var count = 0;
         for (var s in S) {
             // avoid adding Terminal into FOLLOW table
-            count++;
             if (S[s].type === 'NonTerminal' && buildFollow(S[s])) {
                 changed = true;
             }
@@ -196,7 +197,6 @@ function buildFollowTable() {
         if (changed === false) break;
     }
     // input a symbol like S['X']
-    //buildFollow(S['E_']);
     function buildFollow() {
         var changed = false;
         // for all NonTerminal, add $ to its FOLLOW
@@ -269,4 +269,7 @@ function buildFollowTable() {
 
 buildFirstTable();
 buildFollowTable();
+console.log("\nFIRST SET:");
+console.log(FIRST);
+console.log("\nFOLLOW SET:");
 console.log(FOLLOW);
