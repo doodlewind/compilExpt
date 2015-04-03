@@ -157,6 +157,10 @@ var GOTO = [];
 var buildClosure = (function () {
     function closure(items) {
         var J = clone(items);
+        // J: [
+        //     [{str: 'E', type: 'NonTerminal'}, {str: '●', type: '●'}...]
+        // ]
+        //console.log(items);
 
         while (true) {
             var before = J.length;
@@ -198,30 +202,30 @@ var buildClosure = (function () {
         // test if production already in J, and add to J if not
         function testIn(production) {
             var diff = [];
-            for (var i = 0; i < J.length; i++) {
-                var tmpJ = [];
-                var dotIndex;
 
-                // start from item[1]
+            // loop over J
+            for (var i = 0; i < J.length; i++) {
+                var tmpItem = [];
+                // start from item[1], skip first symbol
                 for (var j = 1; j < J[i].length; j++) {
                     var symbol = J[i][j];
                     if (symbol.type !== '●') {
-                        tmpJ.push(symbol);
-                    } else {
-                        dotIndex = j;
+                        tmpItem.push(symbol);
                     }
-                }
-                if (tmpJ.length == production['to'].length) {
-                    for (j in tmpJ) {
-                        if (tmpJ[j].type === production['to'][j].type) {
+                } // tmpItem is one item in J
+                if (tmpItem.length == production['to'].length) {
+                    for (var k = 0; k < tmpItem.length; k++) {
+                        // bug fixed, not comparing type, but str
+                        if (tmpItem[k].str === production['to'][k].str) {
                             continue;
                         }
-                        diff.push(false);
+                        diff.push(false); break; // bug fixed, adding break
                     }
                 } else {
                     diff.push(false);
                 }
             }
+            // if production is different from all items in J
             if (diff.length == J.length) {
                 add(production);
             }
@@ -474,6 +478,7 @@ function buildGotoTable() {
         }
         newState = buildClosure(newState);
         STATE.push(newState);
+        STATE = uniqueBy(STATE, JSON.stringify);
     }
 }
 
@@ -489,17 +494,19 @@ buildFollowTable();
 
 buildGotoTable();
 
-//buildActionTable();
-var a = buildClosure(AUGMENT);
-console.log(a);
-a = {};
-console.log(a);
-//console.log(STATE[0]);
-//console.log();
-
+buildActionTable();
+//logState(STATE[0]);
+console.log(GOTO);
 
 //for (var s in STATE) {
 //    console.log("s: " + s + " " + showState(STATE[s]));
 //}
-//showAction(ACTION);
-//console.log(ACTION);
+function logState(state) {
+    for (var i in state) {
+        var tmp = "";
+        for (var s in state[i]) {
+            tmp +=  " " + state[i][s].str;
+        }
+        console.log(tmp);
+    }
+}
