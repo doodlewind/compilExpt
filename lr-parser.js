@@ -87,7 +87,7 @@ var ACTION = (function(S, GRAMMAR){
         }
     };
 
-    var AUGMENT = [[GRAMMAR[0]['from']].concat([S['●']]).concat(GRAMMAR[1]['to'])];
+    var AUGMENT = [[GRAMMAR[0]['from']].concat([S['●']]).concat(GRAMMAR[0]['to'])];
     var FIRST = {};
     var FOLLOW = {};
     var STATE = [];
