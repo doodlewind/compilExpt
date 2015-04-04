@@ -37,54 +37,13 @@ var showAction = function (action) {
         }
     }
 };
-
-//var S = {
-//    '●': {
-//        str: '●',
-//        type: '●'
-//    },
-//    'S': {
-//        str: 'S',
-//        type: 'NonTerminal'
-//    },
-//    'A': {
-//        str: 'A',
-//        type: 'NonTerminal'
-//    },
-//    'B': {
-//        str: 'B',
-//        type: 'NonTerminal'
-//    },
-//    'a': {
-//        str: 'a',
-//        type: 'Terminal'
-//    },
-//    'b': {
-//        str: 'b',
-//        type: 'Terminal'
-//    },
-//    '+': {
-//        str: '+',
-//        type: 'Terminal'
-//    },
-//    '\n': {
-//        str: '\n',
-//        type: 'Terminal'
-//    }
-//};
-//var r0 = {'from': S['S'], 'to': [S['A']]};
-//var r1 = {'from': S['A'], 'to': [S['A'], S['+'], S['B']]};
-//var r2 = {'from': S['A'], 'to': [S['a']]};
-//var r3 = {'from': S['B'], 'to': [S['b']]};
-//var GRAMMAR = [r0, r1, r2, r3];
-//var AUGMENT = [[r0['from']].concat([S['●']]).concat(r0['to'])];
-//
-//var FIRST = {'S': [], 'A': [], 'B': [], 'a': [], 'b': [], '+': [], '': []};
-//var FOLLOW = {
-//    'S': [],
-//    'A': [],
-//    'B': []
-//};
+var showItem = function (item) {
+    var tmp = "Item: ";
+    for (var i in item) {
+        tmp += item[i].str;
+    }
+    console.log(tmp);
+};
 
 var S = {
     '●': {
@@ -150,9 +109,7 @@ var FOLLOW = {
 
 var STATE = [];
 var ACTION = [];
-var GOTO = [];
 // ACTION[0] = {'a': ['s', 1], '+': ['s', 2]}...
-// GOTO[0]['A'] = 1
 
 var buildClosure = (function () {
     function closure(items) {
@@ -425,17 +382,10 @@ function buildStateTable() {
             var state = STATE[i];
             var shiftSymbols = shiftOf(state);
 
-            if (GOTO[i] === undefined) {
-                GOTO[i] = {};
-            }
             for (var j = 0; j < shiftSymbols.length; j++) {
                 var symbol = shiftSymbols[j];
-
-                if (GOTO[i][symbol.str] === undefined) {
-                    GOTO[i][symbol.str] = STATE.length;
-                    if (addState(state, symbol)) {
-                        changed = true;
-                    }
+                if (addState(state, symbol)) {
+                    changed = true;
                 }
             }
         }
@@ -491,58 +441,126 @@ function buildStateTable() {
 }
 
 function buildActionTable() {
+    for (var i = 0; i < STATE.length; i++ ) {
         var state = STATE[i];
         ACTION[i] = {};
+        var itemsWithSameSymbol = {};
+
+        // group items by their symbol following dot
         for (var j = 0; j < state.length; j++) {
             var item = state[j];
-            shift(item, i);
+            // test and apply possible reduction
+            var dotNext = findDotAndReduce(item, i);
+            if (dotNext !== -1) {
+                if (itemsWithSameSymbol[item[dotNext].str] === undefined) {
+                    itemsWithSameSymbol[item[dotNext].str] = [];
+                }
+                itemsWithSameSymbol[item[dotNext].str].push(item);
+            }
+        }
+
+        for (j in itemsWithSameSymbol) {
+            var tmp = [];
+            for (var k in itemsWithSameSymbol[j]) {
+                item = itemsWithSameSymbol[j][k];
+                dotNext = findDotNext(item);
+                var tmpItem = swapDot(item, dotNext);
+                if (searchShift(tmpItem, i).length > 0) {
+                    tmp.push(searchShift(tmpItem, i));
+                }
+            }
+
+            var searchIndex = findShiftIndex(tmp);
+            if (tmp.length > 0) {
+                searchIndex = findShiftIndex(tmp);
+                if (ACTION[i][j] === undefined) {
+                    ACTION[i][j] = 's' + searchIndex;
+                }
+            }
         }
     }
 
-    function shift(item, stateIndex) {
+    function findDotNext(item) {
         for (var i = 0; i < item.length; i++) {
             if (item[i].str === '●') {
-                // if Dot at end of production, apply reduction
                 if (i == item.length - 1) {
+                    return -1;
+                }
+                else {
+                    return i + 1;
+                }
+            }
+        }
+    }
 
+    function swapDot(item, i) {
+        var tmpItem = clone(item);
+        var tmp = tmpItem[i];
+        tmpItem[i] = tmpItem[i-1];
+        tmpItem[i-1] = tmp;
+        return tmpItem;
+    }
+
+    // find index of item following dot, then apply possible reduction
+    function findDotAndReduce(item, stateIndex) {
+        for (var i = 0; i < item.length; i++) {
+            // if dot at end of production, apply reduction
+            if (item[i].str === '●') {
+                if (i == item.length - 1) {
                     var firstSymbol = item[0].str;
                     for (var s in FOLLOW[firstSymbol]) {
                         // Add reduction rules
                         ACTION[stateIndex][FOLLOW[firstSymbol][s].str] = "rNonTerminal";
                     }
-
-                } else {
-                    // swap position of dot, then search for next state
-                    var tmpItem = clone(item);
-                    var tmp = tmpItem[i];
-                    tmpItem[i] = tmpItem[i+1];
-                    tmpItem[i+1] = tmp;
-                    var searchIndex = searchShift(tmpItem, stateIndex);
-                    if (searchIndex !== -1) {
-                        ACTION[stateIndex][item[i-1].str] = 's' + searchIndex;
-                    }
+                    return -1;
+                }
+                else {
+                    return i + 1;
                 }
             }
         }
     }
 
+    // input an item, return list of all occurrence in STATE
     function searchShift(item) {
+        var tmpItem = clone(item);
+        var results = [];
         for (var i = 0; i < STATE.length; i++) {
-            if (STATE[i][0].length == item.length) {
-                // compare item with STATE[i]
-                var stateItem = STATE[i][0];
-                for (var j = 0; j < item.length; j++) {
-                    if (item[j].str !== stateItem[j].str) {
-                        break;
+            for (var j = 0; j < STATE[i].length; j++) {
+                var stateItem = STATE[i][j];
+
+                if (tmpItem.length == stateItem.length) {
+                    for (var k = 0; k < tmpItem.length; k++) {
+                        if (tmpItem[k].str !== stateItem[k].str) break;
                     }
-                }
-                // if all symbols are equal
-                if (j == item.length) {
-                    return i;
+                    if (k == tmpItem.length) {
+                        results.push(i);
+                    }
                 }
             }
         }
-        return -1;
+        return results;
+    }
+
+    // input [ [1, 2, 3], [1, 5, 8], [1, 2, 4] ], find unique 1
+    function findShiftIndex(indexs) {
+        if (indexs.length == 0) {
+            return -1;
+        }
+        if (indexs.length == 1) {
+            return indexs[0][0];
+        }
+        var firstGroup = indexs[0];
+        for (var i = 0; i < firstGroup.length; i++) {
+            for (var j = 1; j < indexs.length; j++) {
+                if (!hasValue(indexs[j], firstGroup[i])) {
+                    break;
+                }
+            }
+            if (j == indexs.length) {
+                return firstGroup[i];
+            }
+        }
     }
 }
 
@@ -554,11 +572,10 @@ buildStateTable();
 
 buildActionTable();
 
-//logState(STATE[4]);
-//console.log(ACTION);
-//console.log(GOTO);
-var newState = buildClosure(STATE[4]);
-logState(STATE[4]);
+//logState(STATE[0]);
+//console.log("");
+//logState(STATE[1]);
+console.log(ACTION);
 //for (var s in STATE) {
 //    console.log("s: " + s + " " + showState(STATE[s]));
 //}
@@ -570,4 +587,4 @@ function logState(state) {
         }
         console.log(tmp);
     }
-}
+};
