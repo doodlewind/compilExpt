@@ -50,9 +50,11 @@ var r3 = {'from': S['T'], 'to': [S['T'], S['*'], S['F']]};
 var r4 = {'from': S['T'], 'to': [S['F']]};
 var r5 = {'from': S['F'], 'to': [S['('], S['E'], S[')']]};
 var r6 = {'from': S['F'], 'to': [S['id']]};
-var GRAMMAR = [r1, r2, r3, r4, r5, r6];
+var GRAMMAR = [
+    r1, r2, r3, r4, r5, r6
+];
 
-var ACTION = (function(S, GRAMMAR){
+var build = (function(S, GRAMMAR) {
 
     // helper functions
     var uniqueBy = function(a, key) {
@@ -84,6 +86,35 @@ var ACTION = (function(S, GRAMMAR){
                 tmp +=  " " + state[i][s].str;
             }
             console.log(tmp);
+        }
+    };
+    Array.prototype.top = function() {
+        return this[this.length - 1];
+    };
+    Array.prototype.hasItem = function(item) {
+        var state = this;
+        for (var i = 0; i < state.length; i++) {
+            var stateItem = state[i];
+            if (stateItem.length == item.length) {
+                for (var j = 0; j < item.length; j++) {
+                    if (!(stateItem[j].str === item[j].str)) {
+                        break;
+                    }
+                }
+                if (j == item.length) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    Array.prototype.endWithDot = function() {
+        var state = this;
+        for (var i = 0; i < state.length; i++) {
+            var item = state[i];
+            if (item.top().str === '●') {
+                return item;
+            }
         }
     };
 
@@ -602,7 +633,7 @@ var ACTION = (function(S, GRAMMAR){
 
     buildActionTable();
 
-    return ACTION;
-})(S, GRAMMAR);
+    //return [STATE, ACTION];
+});
 
-console.log(ACTION);
+build(S, GRAMMAR);
