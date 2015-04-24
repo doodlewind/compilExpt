@@ -98,7 +98,7 @@ var FOLLOW = {
 
 
 
-// run for once, build FIRST set for all symbols
+// run for once, BUILD FIRST set for all symbols
 function buildFirstTable() {
     while (true) {
         var changed = false;
@@ -184,7 +184,7 @@ function buildFirstTable() {
     }
 }
 
-// run for once, build FOLLOW set for all symbols
+// run for once, BUILD FOLLOW set for all symbols
 function buildFollowTable() {
     while (true) {
         var changed = false;

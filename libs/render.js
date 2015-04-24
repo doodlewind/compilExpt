@@ -12,12 +12,14 @@ var RENDER = (function(ctx, typeset) {
         ctx.font= line[2] + "px Georgia";
 
         var symbol = line[3];
-        if (symbol === "#sum")
-            symbol = "∑";
-        else if (symbol === "#int")
-            symbol = "∫";
-        else if (symbol === "##")
+        if (symbol === "##")
             symbol = "#";
+        //if (symbol === "#sum")
+        //    symbol = "∑";
+        //else if (symbol === "#int")
+        //    symbol = "∫";
+        //else if (symbol === "##")
+        //    symbol = "#";
 
         ctx.fillText(symbol, line[0], HEIGHT-line[1]);
     }

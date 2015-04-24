@@ -37,3 +37,35 @@ var LEXER = (function() {
 
     return lexer;
 })();
+
+// helper functions
+(function () {
+    Array.prototype.last = function() {
+    };
+    Array.prototype.hasItem = function(item) {
+        var state = this;
+        for (var i = 0; i < state.length; i++) {
+            var stateItem = state[i];
+            if (stateItem.length == item.length) {
+                for (var j = 0; j < item.length; j++) {
+                    if (!(stateItem[j].str === item[j].str)) {
+                        break;
+                    }
+                }
+                if (j == item.length) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    Array.prototype.endWithDot = function() {
+        var state = this;
+        for (var i = 0; i < state.length; i++) {
+            var item = state[i];
+            if (item.top().str === '●') {
+                return item;
+            }
+        }
+    };
+})();

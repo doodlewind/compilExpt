@@ -7,17 +7,33 @@ var S = {
         str: '●',
         type: '●'
     },
-    'E': {
-        str: 'E',
+    '\n': {
+        str: '\n',
+        type: 'Terminal'
+    },
+    'S': {
+        str: 'S',
+        type: 'NonTerminal'
+    },
+    'B': {
+        str: 'B',
         type: 'NonTerminal'
     },
     'T': {
         str: 'T',
         type: 'NonTerminal'
     },
-    'F': {
-        str: 'F',
+    'R': {
+        str: 'R',
         type: 'NonTerminal'
+    },
+    '{': {
+        str: '{',
+        type: 'Terminal'
+    },
+    '}': {
+        str: '}',
+        type: 'Terminal'
     },
     '(': {
         str: '(',
@@ -27,34 +43,46 @@ var S = {
         str: ')',
         type: 'Terminal'
     },
-    '+': {
-        str: '+',
+    '_': {
+        str: '_',
         type: 'Terminal'
     },
-    '*': {
-        str: '*',
+    '^': {
+        str: '^',
         type: 'Terminal'
     },
     'id': {
         str: 'id',
         type: 'Terminal'
     },
-    '\n': {
-        str: '\n',
+    'num': {
+        str: 'num',
+        type: 'Terminal'
+    },
+    '/blank': {
+        str: '/blank',
+        type: 'Terminal'
+    },
+    '$$': {
+        str: '$$',
         type: 'Terminal'
     }
 };
-var r1 = {'from': S['E'], 'to': [S['E'],  S['+'], S['T']]};
-var r2 = {'from': S['E'], 'to': [S['T']]};
-var r3 = {'from': S['T'], 'to': [S['T'], S['*'], S['F']]};
-var r4 = {'from': S['T'], 'to': [S['F']]};
-var r5 = {'from': S['F'], 'to': [S['('], S['E'], S[')']]};
-var r6 = {'from': S['F'], 'to': [S['id']]};
 var GRAMMAR = [
-    r1, r2, r3, r4, r5, r6
+    {'from': S['S'], 'to': [S['$$'],  S['B'], S['$$']]},
+    {'from': S['B'], 'to': [S['T'], S['B']]},
+    {'from': S['B'], 'to': [S['T']]},
+    {'from': S['T'], 'to': [S['R'], S['_'], S['^'], S['{'], S['B'], S['}'], S['{'], S['B'], S['}']]},
+    {'from': S['T'], 'to': [S['R'], S['^'], S['{'], S['B'], S['}']]},
+    {'from': S['T'], 'to': [S['R'], S['_'], S['{'], S['B'], S['}']]},
+    {'from': S['T'], 'to': [S['R']]},
+    {'from': S['R'], 'to': [S['id']]},
+    {'from': S['R'], 'to': [S['num']]},
+    {'from': S['R'], 'to': [S['/blank']]},
+    {'from': S['R'], 'to': [S['('], S['B'], S[')']]}
 ];
 
-var build = (function(S, GRAMMAR) {
+var BUILD = function(S, GRAMMAR) {
     // helper functions
     var uniqueBy = function(a, key) {
         var seen = {};
@@ -77,15 +105,6 @@ var build = (function(S, GRAMMAR) {
     };
     var hasValue = function(arr,obj) {
         return (arr.indexOf(obj) != -1);
-    };
-    var logState = function(state) {
-        for (var i in state) {
-            var tmp = "";
-            for (var s in state[i]) {
-                tmp +=  " " + state[i][s].str;
-            }
-            console.log(tmp);
-        }
     };
 
     var AUGMENT = [[GRAMMAR[0]['from']].concat([S['●']]).concat(GRAMMAR[0]['to'])];
@@ -415,7 +434,7 @@ var build = (function(S, GRAMMAR) {
 
         function addState(state, symbol) {
             var newState = [];
-            // swap dot to build new state
+            // swap dot to BUILD new state
             for (var i = 0; i < state.length; i++) {
                 var item = state[i];
                 for (var j = 0; j < item.length; j++) {
@@ -480,7 +499,7 @@ var build = (function(S, GRAMMAR) {
                 }
             }
         }
-        // build accept symbol
+        // BUILD accept symbol
         if (ACTION.length > 1) {
             ACTION[1]['\n'] = S["ACC"].str;
         }
@@ -526,7 +545,7 @@ var build = (function(S, GRAMMAR) {
             }
             function reduceRule(index, symbol) {
                 var state = STATE[index];
-                for (var i in state) {
+                for (var i = 0; i < state.length; i++) {
                     var item = state[i];
                     if (item[item.length - 1].str === '●') {
                         ACTION[index][symbol.str] = findItemInGrammar(item);
@@ -603,38 +622,28 @@ var build = (function(S, GRAMMAR) {
 
     buildActionTable();
 
-    //return [STATE, ACTION];
-});
 
-build(S, GRAMMAR);
+    return [STATE, ACTION];
+};
 
-(function () {
-    Array.prototype.last = function() {
-    };
-    Array.prototype.hasItem = function(item) {
-        var state = this;
-        for (var i = 0; i < state.length; i++) {
-            var stateItem = state[i];
-            if (stateItem.length == item.length) {
-                for (var j = 0; j < item.length; j++) {
-                    if (!(stateItem[j].str === item[j].str)) {
-                        break;
-                    }
-                }
-                if (j == item.length) {
-                    return true;
-                }
-            }
+var logState = function(state) {
+    for (var i in state) {
+        var tmp = "";
+        for (var s in state[i]) {
+            tmp +=  " " + state[i][s].str;
         }
-        return false;
-    };
-    Array.prototype.endWithDot = function() {
-        var state = this;
-        for (var i = 0; i < state.length; i++) {
-            var item = state[i];
-            if (item.top().str === '●') {
-                return item;
-            }
-        }
-    };
-})();
+        console.log(tmp);
+    }
+};
+
+var result = BUILD(S, GRAMMAR);
+var state = result[0];
+var action = result[1];
+
+for (var i = 0; i < state.length; i++) {
+    logState(state[i]);
+}
+
+for (var i = 0; i < action.length; i++) {
+    console.log(action[i]);
+}
