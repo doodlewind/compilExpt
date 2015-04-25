@@ -1,5 +1,5 @@
 var LEXER = function() {
-    var text = '$$a^{2}$$';
+    var text = '$$a_^{c2}{b}$$';
     var lexOut = [];
 
     function nextToken() {
@@ -48,6 +48,8 @@ var LEXER = function() {
     while(text.length > 0) {
         lexOut.push(nextToken());
     }
+    // manually add end symbol
+    lexOut.push({token: '\n', value: '\n'});
 
     return lexOut;
 };
@@ -170,7 +172,7 @@ var BUILD = function(S, GRAMMAR) {
     var FOLLOW = {};
     var STATE = [];
     var ACTION = [];
-
+    console.log(AUGMENT);
     var buildClosure = (function () {
         function closure(items) {
             var J = clone(items);
@@ -557,9 +559,30 @@ var BUILD = function(S, GRAMMAR) {
                 }
             }
         }
-        // BUILD accept symbol
-        if (ACTION.length > 1) {
-            ACTION[1]['\n'] = S["ACC"].str;
+
+        // BUILD accept symbol in format ['ACC', 0]
+        var acc = [GRAMMAR[0]['from']].concat(GRAMMAR[0]['to']).concat([S['●']]);
+
+        for (i = 0; i < STATE.length; i++ ) {
+            state = STATE[i];
+            for (j = 0; j < state.length; j++) {
+                item = state[j];
+                if (findAccept(i, item)) break;
+            }
+        }
+
+        function findAccept(index, item) {
+            if (item.length == acc.length) {
+                for (k = 0; k < item.length; k++) {
+                    if (!(item[k].str === acc[k].str)) break;
+                }
+                if (k == item.length) {
+                    //console.log(index);
+                    ACTION[index]['\n'] = ['ACC', 0];
+                    return true;
+                }
+            }
+            return false;
         }
 
         function findDotNext(item) {
@@ -697,12 +720,50 @@ var logState = function(state) {
 var TMP = BUILD(S, GRAMMAR);
 var STATE = TMP[0];
 var ACTION = TMP[1];
+var STACK = [0];
+//for (var i = 0; i < STATE.length; i++) {
+//    logState(STATE[i]);
+//}
+//
+//for (i = 0; i < ACTION.length; i++) {
+//    console.log(ACTION[i]);
+//}
 
-for (var i = 0; i < STATE.length; i++) {
-    logState(STATE[i]);
+//console.log(STREAM);
+
+//console.log(ACTION[0][symbol]);
+
+var i = 0;
+
+
+while (true) {
+    if (i > STREAM.length - 1) {
+        console.log("!");
+        break;
+    }
+    var a = STREAM[i].token;
+    var s = STACK[STACK.length-1];
+    // ACTION[0][symbol] in format ['s', 1]
+    var act = ACTION[s][a][0];
+    var index = ACTION[s][a][1];
+
+    if (act === 's') {
+        STACK.push(index);
+        i++;
+    }
+    else if (act === 'r') {
+        var beta = GRAMMAR[index]['to'].length;
+        var A = GRAMMAR[index]['from'].str;
+
+        STACK.splice(-1*beta, beta);
+        var t = STACK[STACK.length-1];
+
+        STACK.push(ACTION[t][A][1]);
+        console.log(GRAMMAR[index])
+    }
+    else if (act === 'ACC') break;
+    else {
+        console.log("ERROR");
+        break;
+    }
 }
-
-for (i = 0; i < ACTION.length; i++) {
-    console.log(ACTION[i]);
-}
-
