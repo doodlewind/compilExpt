@@ -1,169 +1,25 @@
-var LEXER = function() {
-    var text = '$$a_^{c2}{b}$$';
-    var lexOut = [];
-
-    function nextToken() {
-        var space = text.match(/^\s/);
-        if (space != null) {
-            // skip all space
-            forward(space);
-            return nextToken();
-        }
-
-        var id = text.match(/^[a-zA-Z]+[a-zA-Z0-9]*/);
-        if (id != null) return {token: 'id', value: forward(id)};
-
-        var num = text.match(/^[\d]+/);
-        if (num != null) return {token: 'num', value: forward(num)};
-
-        var blank = text.match(/^\/blank/);
-        if (blank != null) return {token: '/blank', value: forward(blank)};
-
-        var caret = text.match(/^\^/);
-        if (caret != null) return {token: '^', value: forward(caret)};
-
-        var underline = text.match(/^_/);
-        if (underline != null) return {token: '_', value: forward(underline)};
-
-        var dollar = text.match(/^\$\$/);
-        if (dollar != null) return {token: '$$', value: forward(dollar)};
-
-        var lBrace = text.match(/^\(/);
-        if (lBrace != null ) return {token: '(', value: forward(lBrace)};
-
-        var rBrace = text.match(/^\)/);
-        if (rBrace != null ) return {token: ')', value: forward(rBrace)};
-
-        var lBracket = text.match(/^\{/);
-        if (lBracket != null ) return {token: '{', value: forward(lBracket)};
-
-        var rBracket = text.match(/^}/);
-        if (rBracket != null ) return {token: '}', value: forward(rBracket)};
-
-        function forward(symbol) {
-            text = text.substr(symbol[0].length, text.length);
-            return symbol[0];
-        }
-    }
-    while(text.length > 0) {
-        lexOut.push(nextToken());
-    }
-    // manually add end symbol
-    lexOut.push({token: '\n', value: '\n'});
-
-    return lexOut;
-};
-
-var STREAM = LEXER();
-console.log(STREAM);
-
-
-var S = {
-    'ACC': {
-        str: 'ACC',
-        type: 'ACC'
-    },
-    '●': {
-        str: '●',
-        type: '●'
-    },
-    '\n': {
-        str: '\n',
-        type: 'Terminal'
-    },
-    'S': {
-        str: 'S',
-        type: 'NonTerminal'
-    },
-    'B': {
-        str: 'B',
-        type: 'NonTerminal'
-    },
-    'T': {
-        str: 'T',
-        type: 'NonTerminal'
-    },
-    'R': {
-        str: 'R',
-        type: 'NonTerminal'
-    },
-    '{': {
-        str: '{',
-        type: 'Terminal'
-    },
-    '}': {
-        str: '}',
-        type: 'Terminal'
-    },
-    '(': {
-        str: '(',
-        type: 'Terminal'
-    },
-    ')': {
-        str: ')',
-        type: 'Terminal'
-    },
-    '_': {
-        str: '_',
-        type: 'Terminal'
-    },
-    '^': {
-        str: '^',
-        type: 'Terminal'
-    },
-    'id': {
-        str: 'id',
-        type: 'Terminal'
-    },
-    'num': {
-        str: 'num',
-        type: 'Terminal'
-    },
-    '/blank': {
-        str: '/blank',
-        type: 'Terminal'
-    },
-    '$$': {
-        str: '$$',
-        type: 'Terminal'
-    }
-};
-var GRAMMAR = [
-    {'from': S['S'], 'to': [S['$$'],  S['B'], S['$$']]},
-    {'from': S['B'], 'to': [S['T'], S['B']]},
-    {'from': S['B'], 'to': [S['T']]},
-    {'from': S['T'], 'to': [S['R'], S['_'], S['^'], S['{'], S['B'], S['}'], S['{'], S['B'], S['}']]},
-    {'from': S['T'], 'to': [S['R'], S['^'], S['{'], S['B'], S['}']]},
-    {'from': S['T'], 'to': [S['R'], S['_'], S['{'], S['B'], S['}']]},
-    {'from': S['T'], 'to': [S['R']]},
-    {'from': S['R'], 'to': [S['id']]},
-    {'from': S['R'], 'to': [S['num']]},
-    {'from': S['R'], 'to': [S['/blank']]},
-    {'from': S['R'], 'to': [S['('], S['B'], S[')']]}
-];
-
-var BUILD = function(S, GRAMMAR) {
+var BUILD = function (S, GRAMMAR) {
     // helper functions
-    var uniqueBy = function(a, key) {
+    var uniqueBy = function (a, key) {
         var seen = {};
-        return a.filter(function(item) {
+        return a.filter(function (item) {
             var k = key(item);
             return seen.hasOwnProperty(k) ? false : (seen[k] = true);
-        })
+        });
     };
-    var clone = function(obj){
+    var clone = function (obj) {
         var newObj = obj.constructor === Array ? [] : {};
-        if(typeof obj !== 'object'){
+        if (typeof obj !== 'object') {
             return;
         } else {
-            for(var i in obj){
+            for (var i in obj) {
                 newObj[i] = typeof obj[i] === 'object' ?
                     clone(obj[i]) : obj[i];
             }
         }
         return newObj;
     };
-    var hasValue = function(arr,obj) {
+    var hasValue = function (arr, obj) {
         return (arr.indexOf(obj) != -1);
     };
 
@@ -172,7 +28,7 @@ var BUILD = function(S, GRAMMAR) {
     var FOLLOW = {};
     var STATE = [];
     var ACTION = [];
-    console.log(AUGMENT);
+    //console.log(AUGMENT);
     var buildClosure = (function () {
         function closure(items) {
             var J = clone(items);
@@ -201,9 +57,9 @@ var BUILD = function(S, GRAMMAR) {
                     // symbol = E, A, + ...
                     var symbol = item[i];
                     if (symbol.type === '●') {
-                        if (i+1 in item) {
+                        if (i + 1 in item) {
                             //console.log(item[i+1].str);
-                            findStartWith(item[i+1]);
+                            findStartWith(item[i + 1]);
                         }
                     }
                 }
@@ -322,7 +178,7 @@ var BUILD = function(S, GRAMMAR) {
                                 }
                             }
 
-                        } else{
+                        } else {
                             // X → ɛ
                             // add in epsilon
                             // console.log("change X to epsilon");
@@ -394,8 +250,8 @@ var BUILD = function(S, GRAMMAR) {
 
                 // if A → B C D E F, then FOLLOW(E)←FIRST(F), FOLLOW(D)←FIRST(E)...
                 for (; j > 0; j--) {
-                    if (rule[j-1].type === 'NonTerminal') {
-                        addFirstToFollow(rule[j].str, rule[j-1].str);
+                    if (rule[j - 1].type === 'NonTerminal') {
+                        addFirstToFollow(rule[j].str, rule[j - 1].str);
                     }
                 }
                 //addFirstToFollow(rule[0].str, GRAMMAR[i]['from'].str);
@@ -481,8 +337,8 @@ var BUILD = function(S, GRAMMAR) {
                 for (var j = 0; j < item.length; j++) {
                     if (item[j].type === '●') {
                         // do not add symbol if production ended
-                        if (j+1 in item) {
-                            shiftTo.push(item[j+1]);
+                        if (j + 1 in item) {
+                            shiftTo.push(item[j + 1]);
                         }
                     }
                 }
@@ -500,13 +356,13 @@ var BUILD = function(S, GRAMMAR) {
                 for (var j = 0; j < item.length; j++) {
                     if (item[j].type === '●') {
                         // only add item that matches symbol
-                        if (j+1 in item && item[j+1].str === symbol.str) {
+                        if (j + 1 in item && item[j + 1].str === symbol.str) {
                             var newItem = clone(item);
 
                             // swap Dot with its following symbol
                             var tmp = newItem[j];
-                            newItem[j] = newItem[j+1];
-                            newItem[j+1] = tmp;
+                            newItem[j] = newItem[j + 1];
+                            newItem[j + 1] = tmp;
                             newState.push(newItem);
                         }
                     }
@@ -521,7 +377,7 @@ var BUILD = function(S, GRAMMAR) {
     }
 
     function buildActionTable() {
-        for (var i = 0; i < STATE.length; i++ ) {
+        for (var i = 0; i < STATE.length; i++) {
             var state = STATE[i];
             ACTION[i] = {};
             var itemsWithSameSymbol = {};
@@ -563,7 +419,7 @@ var BUILD = function(S, GRAMMAR) {
         // BUILD accept symbol in format ['ACC', 0]
         var acc = [GRAMMAR[0]['from']].concat(GRAMMAR[0]['to']).concat([S['●']]);
 
-        for (i = 0; i < STATE.length; i++ ) {
+        for (i = 0; i < STATE.length; i++) {
             state = STATE[i];
             for (j = 0; j < state.length; j++) {
                 item = state[j];
@@ -601,8 +457,8 @@ var BUILD = function(S, GRAMMAR) {
         function swapDot(item, i) {
             var tmpItem = clone(item);
             var tmp = tmpItem[i];
-            tmpItem[i] = tmpItem[i-1];
-            tmpItem[i-1] = tmp;
+            tmpItem[i] = tmpItem[i - 1];
+            tmpItem[i - 1] = tmp;
             return tmpItem;
         }
 
@@ -638,7 +494,7 @@ var BUILD = function(S, GRAMMAR) {
                         var g = GRAMMAR[i];
                         if (g['from'].str == item[0].str && g['to'].length == item.length - 2) {
                             for (var j = 0; j < item.length - 2; j++) {
-                                if (g['to'][j].str !== item[j+1].str) {
+                                if (g['to'][j].str !== item[j + 1].str) {
                                     break;
                                 }
                             }
@@ -707,20 +563,22 @@ var BUILD = function(S, GRAMMAR) {
     return [STATE, ACTION];
 };
 
-var logState = function(state) {
-    for (var i in state) {
-        var tmp = "";
-        for (var s in state[i]) {
-            tmp +=  " " + state[i][s].str;
-        }
-        console.log(tmp);
-    }
-};
-
 var TMP = BUILD(S, GRAMMAR);
 var STATE = TMP[0];
 var ACTION = TMP[1];
 var STACK = [0];
+
+{
+//var logState = function (state) {
+//    for (var i in state) {
+//        var tmp = "";
+//        for (var s in state[i]) {
+//            tmp += " " + state[i][s].str;
+//        }
+//        console.log(tmp);
+//    }
+//};
+
 //for (var i = 0; i < STATE.length; i++) {
 //    logState(STATE[i]);
 //}
@@ -729,41 +587,5 @@ var STACK = [0];
 //    console.log(ACTION[i]);
 //}
 
-//console.log(STREAM);
-
 //console.log(ACTION[0][symbol]);
-
-var i = 0;
-
-
-while (true) {
-    if (i > STREAM.length - 1) {
-        console.log("!");
-        break;
-    }
-    var a = STREAM[i].token;
-    var s = STACK[STACK.length-1];
-    // ACTION[0][symbol] in format ['s', 1]
-    var act = ACTION[s][a][0];
-    var index = ACTION[s][a][1];
-
-    if (act === 's') {
-        STACK.push(index);
-        i++;
-    }
-    else if (act === 'r') {
-        var beta = GRAMMAR[index]['to'].length;
-        var A = GRAMMAR[index]['from'].str;
-
-        STACK.splice(-1*beta, beta);
-        var t = STACK[STACK.length-1];
-
-        STACK.push(ACTION[t][A][1]);
-        console.log(GRAMMAR[index])
-    }
-    else if (act === 'ACC') break;
-    else {
-        console.log("ERROR");
-        break;
-    }
 }

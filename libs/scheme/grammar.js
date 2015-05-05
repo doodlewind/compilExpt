@@ -1,0 +1,55 @@
+// TODO: Grammar for basic scheme expressions
+var S = {
+    'ACC': {
+        str: 'ACC',
+        type: 'ACC'
+    },
+    '●': {
+        str: '●',
+        type: '●'
+    },
+    '\n': {
+        str: '\n',
+        type: 'Terminal'
+    },
+    'S': {
+        str: 'S',
+        type: 'NonTerminal'
+    },
+    'Exp': {
+        str: 'Exp',
+        type: 'NonTerminal'
+    },
+    'ExpS': {
+        str: 'ExpS',
+        type: 'NonTerminal'
+    },
+    '(': {
+        str: '(',
+        type: 'Terminal'
+    },
+    ')': {
+        str: ')',
+        type: 'Terminal'
+    },
+    'opr': {
+        str: 'opr',
+        type: 'Terminal'
+    },
+    'id': {
+        str: 'id',
+        type: 'Terminal'
+    },
+    'num': {
+        str: 'num',
+        type: 'Terminal'
+    }
+};
+var GRAMMAR = [
+    {'from': S['S'], 'to': [S['Exp']]},
+    {'from': S['ExpS'], 'to': [S['Exp']]},
+    {'from': S['ExpS'], 'to': [S['ExpS'], S['Exp']]},
+    {'from': S['Exp'], 'to': [S['('], S['opr'], S['ExpS'], S[')']]},
+    {'from': S['Exp'], 'to': [S['id']]},
+    {'from': S['Exp'], 'to': [S['num']]}
+];

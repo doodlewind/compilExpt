@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Typesetting Demo</title>
-    <!--<script src="libs/lexer.js"></script>-->
-    <!--<script src="libs/grammar.js"></script>-->
+    <script src="libs/typesetting/lexer.js"></script>
+    <script src="libs/typesetting/grammar.js"></script>
     <script src="libs/table-builder.js"></script>
-    <!--<script src="libs/parser.js"></script>-->
-    <!--<script src="libs/render.js"></script>-->
+    <script src="libs/parser.js"></script>
+    <script src="libs/render.js"></script>
     <script>
        window.onload = function() {
            var go = document.getElementById("btn-go");
@@ -16,8 +16,8 @@
                var ctx = out.getContext("2d");
                var typeset = document.getElementById("typeset").value;
                RENDER(ctx, typeset);
-           }
-       }
+           };
+       };
     </script>
     <style>
         html {

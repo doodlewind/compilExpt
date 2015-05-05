@@ -1,6 +1,7 @@
 // TODO: Divide formula into lexical elements
-var LEXER = function() {
-    var text = '$$a^{2}$$';
+var TEXT = '(+ 1 2)';
+var LEXER = function(TEXT) {
+    var text = TEXT;
     var lexOut = [];
 
     function nextToken() {
@@ -17,29 +18,14 @@ var LEXER = function() {
         var num = text.match(/^[\d]+/);
         if (num != null) return {token: 'num', value: forward(num)};
 
-        var blank = text.match(/^\/blank/);
-        if (blank != null) return {token: '/blank', value: forward(blank)};
-
-        var caret = text.match(/^\^/);
-        if (caret != null) return {token: '^', value: forward(caret)};
-
-        var underline = text.match(/^_/);
-        if (underline != null) return {token: '_', value: forward(underline)};
-
-        var dollar = text.match(/^\$\$/);
-        if (dollar != null) return {token: '$$', value: forward(dollar)};
-
         var lBrace = text.match(/^\(/);
         if (lBrace != null ) return {token: '(', value: forward(lBrace)};
 
         var rBrace = text.match(/^\)/);
         if (rBrace != null ) return {token: ')', value: forward(rBrace)};
 
-        var lBracket = text.match(/^\{/);
-        if (lBracket != null ) return {token: '{', value: forward(lBracket)};
-
-        var rBracket = text.match(/^}/);
-        if (rBracket != null ) return {token: '}', value: forward(rBracket)};
+        var opr = text.match(/^\+|\-|\*|\//);
+        if (opr != null ) return {token: 'opr', value: forward(opr)};
 
         function forward(symbol) {
             text = text.substr(symbol[0].length, text.length);
@@ -53,5 +39,5 @@ var LEXER = function() {
     return lexOut;
 };
 
-var stream = LEXER();
-console.log(stream);
+var STREAM = LEXER(TEXT);
+console.log(STREAM);
