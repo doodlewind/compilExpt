@@ -49,8 +49,8 @@ var LEXER = function() {
     while(text.length > 0) {
         lexOut.push(nextToken());
     }
-
+    lexOut.push({token: '\n', value: '\n'});
     return lexOut;
 };
 var STREAM = LEXER();
-// console.log(STREAM);
+//console.log(STREAM);

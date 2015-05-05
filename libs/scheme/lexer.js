@@ -1,5 +1,5 @@
 // TODO: Divide formula into lexical elements
-var TEXT = '(+ 1 2)';
+var TEXT = '(+ 1 (* 2 (- 3 4)) 5 6 7 8)';
 var LEXER = function(TEXT) {
     var text = TEXT;
     var lexOut = [];
@@ -35,9 +35,9 @@ var LEXER = function(TEXT) {
     while(text.length > 0) {
         lexOut.push(nextToken());
     }
-
+    lexOut.push({token: '\n', value: '\n'});
     return lexOut;
 };
 
 var STREAM = LEXER(TEXT);
-console.log(STREAM);
+//console.log(STREAM);

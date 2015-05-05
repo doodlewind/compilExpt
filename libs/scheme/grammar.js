@@ -46,10 +46,34 @@ var S = {
     }
 };
 var GRAMMAR = [
-    {'from': S['S'], 'to': [S['Exp']]},
-    {'from': S['ExpS'], 'to': [S['Exp']]},
-    {'from': S['ExpS'], 'to': [S['ExpS'], S['Exp']]},
-    {'from': S['Exp'], 'to': [S['('], S['opr'], S['ExpS'], S[')']]},
-    {'from': S['Exp'], 'to': [S['id']]},
-    {'from': S['Exp'], 'to': [S['num']]}
+    {
+        'from': S['S'],'to': [S['Exp']],
+        //'action': ""
+        'action': "console.log('End');"
+    },
+    {
+        'from': S['ExpS'], 'to': [S['Exp'], S['ExpS']],
+        'action': ""
+        //'action': "console.log(STREAM[i].value);"
+    },
+    {
+        'from': S['ExpS'],'to': [S['Exp']],
+        'action': ""
+        //'action': "console.log(STREAM[i].value);"
+    },
+    {
+        'from': S['Exp'], 'to': [S['('], S['opr'], S['ExpS'], S[')']],
+        'action': ""
+        //'action': "console.log(STREAM[i].value);"
+    },
+    {
+        'from': S['Exp'], 'to': [S['id']],
+        'action': ""
+        //'action': "console.log(STREAM[i].value);"
+    },
+    {
+        'from': S['Exp'], 'to': [S['num']],
+        'action': ""
+        //'action': "console.log(STREAM[i].value);"
+    }
 ];

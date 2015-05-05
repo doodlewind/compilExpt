@@ -568,24 +568,27 @@ var STATE = TMP[0];
 var ACTION = TMP[1];
 var STACK = [0];
 
-{
-//var logState = function (state) {
-//    for (var i in state) {
-//        var tmp = "";
-//        for (var s in state[i]) {
-//            tmp += " " + state[i][s].str;
-//        }
-//        console.log(tmp);
-//    }
-//};
+var printState = function (state) {
+    for (var i in state) {
+        var tmp = "";
+        for (var s in state[i]) {
+            tmp += " " + state[i][s].str;
+        }
+        console.log(tmp);
+    }
+};
+var printAction = function () {
+    console.log("\n\nACTION Table:");
+    for (var i = 0; i < ACTION.length; i++) {
+        var tmp = "| ";
+        for (var j in ACTION[i]){
+            tmp = tmp + j + " " + ACTION[i][j][0] + ACTION[i][j][1] + " | ";
+        }
+        console.log(tmp);
+    }
+};
 
 //for (var i = 0; i < STATE.length; i++) {
-//    logState(STATE[i]);
+//    printState(STATE[i]);
 //}
-//
-//for (i = 0; i < ACTION.length; i++) {
-//    console.log(ACTION[i]);
-//}
-
-//console.log(ACTION[0][symbol]);
-}
+//printAction();

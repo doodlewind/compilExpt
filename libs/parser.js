@@ -4,11 +4,10 @@ var PARSE = function(STREAM, STATE, STACK, ACTION) {
     var i = 0;
     while (true) {
         if (i > STREAM.length - 1) {
-            console.log("Error Parsing!");
+            console.log("Parsing Outbound!");
             break;
         }
         var a = STREAM[i].token;
-        console.log(a);
         var s = STACK[STACK.length - 1];
         // ACTION[0][symbol] is in format ['s', 1]
         var act = ACTION[s][a][0];
@@ -17,7 +16,6 @@ var PARSE = function(STREAM, STATE, STACK, ACTION) {
         if (act === 's') {
             STACK.push(index);
             i++;
-            console.log(GRAMMAR[index]);
         }
         else if (act === 'r') {
             var beta = GRAMMAR[index]['to'].length;
@@ -27,14 +25,18 @@ var PARSE = function(STREAM, STATE, STACK, ACTION) {
             var t = STACK[STACK.length - 1];
 
             STACK.push(ACTION[t][A][1]);
+
             console.log(GRAMMAR[index]);
+            //eval(GRAMMAR[index]['action']);
         }
         else if (act === 'ACC') {
             console.log(GRAMMAR[index]);
+            //eval(GRAMMAR[index]['action']);
+
             break;
         }
         else {
-            console.log("Error");
+            console.log("Unknown Error!");
             break;
         }
     }
