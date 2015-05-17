@@ -1,13 +1,15 @@
-// TODO: Parse lexical elements into typesets
+// TODO: Build grammar tree explicitly
 
 var PARSE = function(STREAM, STATE, STACK, ACTION) {
+    var exp, expS;
     var i = 0;
     while (true) {
         if (i > STREAM.length - 1) {
             console.log("Parsing Outbound!");
             break;
         }
-        var a = STREAM[i].token;
+        var symbol = STREAM[i];
+        var a = symbol.token;
         var s = STACK[STACK.length - 1];
         // ACTION[0][symbol] is in format ['s', 1]
         var act = ACTION[s][a][0];
@@ -27,10 +29,10 @@ var PARSE = function(STREAM, STATE, STACK, ACTION) {
             STACK.push(ACTION[t][A][1]);
 
             console.log(GRAMMAR[index]);
-            //eval(GRAMMAR[index]['action']);
+            eval(GRAMMAR[index]['action']);
         }
         else if (act === 'ACC') {
-            console.log(GRAMMAR[index]);
+            //console.log(GRAMMAR[index]);
             //eval(GRAMMAR[index]['action']);
 
             break;

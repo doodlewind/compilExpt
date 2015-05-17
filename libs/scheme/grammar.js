@@ -36,16 +36,16 @@ var S = {
         str: 'opr',
         type: 'Terminal'
     },
-    'id': {
-        str: 'id',
-        type: 'Terminal'
-    },
+    //'id': {
+    //    str: 'id',
+    //    type: 'Terminal'
+    //},
     'num': {
         str: 'num',
         type: 'Terminal'
     }
 };
-var GRAMMAR = [
+var GRAMMAR_COMPLEX = [
     {
         'from': S['S'],'to': [S['Exp']],
         //'action': ""
@@ -53,27 +53,43 @@ var GRAMMAR = [
     },
     {
         'from': S['ExpS'], 'to': [S['Exp'], S['ExpS']],
-        'action': ""
-        //'action': "console.log(STREAM[i].value);"
+        //'action': ""
+        'action': "console.log(symbol.value);"
     },
     {
         'from': S['ExpS'],'to': [S['Exp']],
-        'action': ""
-        //'action': "console.log(STREAM[i].value);"
+        //'action': ""
+        'action': "console.log(symbol.value);"
     },
     {
         'from': S['Exp'], 'to': [S['('], S['opr'], S['ExpS'], S[')']],
-        'action': ""
-        //'action': "console.log(STREAM[i].value);"
+        //'action': ""
+        'action': "console.log(symbol.value);"
+    },
+    //{
+    //    'from': S['Exp'], 'to': [S['id']],
+    //    'action': ""
+    //    //'action': "console.log(STREAM[i].value);"
+    //},
+    {
+        'from': S['Exp'], 'to': [S['num']],
+        //'action': ""
+        'action': "console.log(symbol.value);"
+    }
+];
+
+var GRAMMAR = [
+    {
+        'from': S['S'],'to': [S['Exp']],
+        'action': "console.log('End');"
     },
     {
-        'from': S['Exp'], 'to': [S['id']],
+        'from': S['Exp'], 'to': [S['('], S['opr'], S['Exp'], S['Exp'], S[')']],
         'action': ""
-        //'action': "console.log(STREAM[i].value);"
+        //'action': "console.log(symbol.value);"
     },
     {
         'from': S['Exp'], 'to': [S['num']],
-        'action': ""
-        //'action': "console.log(STREAM[i].value);"
+        'action': "console.log(symbol.value);"
     }
 ];

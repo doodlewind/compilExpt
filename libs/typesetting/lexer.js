@@ -53,4 +53,4 @@ var LEXER = function() {
     return lexOut;
 };
 var STREAM = LEXER();
-//console.log(STREAM);
+console.log(STREAM);
