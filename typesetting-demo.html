@@ -14,8 +14,7 @@
            go.onclick = function() {
                var out = document.getElementById("out");
                var ctx = out.getContext("2d");
-               var typeset = document.getElementById("typeset").value;
-               RENDER(ctx, typeset);
+               RENDER(ctx);
            };
        };
     </script>
@@ -31,6 +30,7 @@
             padding: 30px 30px 50px 30px;
             margin: auto;
             max-width: 550px;
+            min-height: 400px;
             font-family: serif;
         }
         h2 {
@@ -49,10 +49,11 @@
         #btn-go {
             float: right;
         }
-        #typeset, #formula {
+        #output, #input {
             margin: 2px;
             width: 90%;
             border: 1px lightgray solid;
+            height: 6rem;
         }
     </style>
 </head>
@@ -62,15 +63,12 @@
     <h2>Typesetting Demo</h2>
     <div style="clear: both;"></div>
     <div class="input-panel">
-        <p>Formula</p>
-        <textarea id="formula"></textarea>
+        <p>Input</p>
+        <textarea id="input">$$a_^{2}{i}b$$</textarea>
     </div>
     <div class="input-panel">
-        <p>Typeset</p>
-        <textarea id="typeset">
-240,250,30,a
-260,265,20,2
-        </textarea>
+        <p>Output</p>
+        <textarea id="output"></textarea>
     </div>
     <canvas id="out">Demo</canvas>
 </div>

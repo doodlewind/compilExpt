@@ -1,4 +1,4 @@
-// TODO: Build grammar tree explicitly
+// TODO: Build grammar tree explictly
 
 var PARSE = function(STREAM, STATE, STACK, ACTION) {
     var exp, expS;

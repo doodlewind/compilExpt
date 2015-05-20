@@ -1,7 +1,7 @@
 // TODO: Divide formula into lexical elements
-var LEXER = function() {
-    var text = '$$a^{2}$$';
+var LEXER = function(text) {
     var lexOut = [];
+    var matched;
 
     function nextToken() {
         var space = text.match(/^\s/);
@@ -11,46 +11,86 @@ var LEXER = function() {
             return nextToken();
         }
 
-        var id = text.match(/^[a-zA-Z]+[a-zA-Z0-9]*/);
-        if (id != null) return {token: 'id', value: forward(id)};
+        var id = text.match(/^[a-zA-Z\+\-\*=]+[a-zA-Z0-9\+\-\*=]*/);
+        if (id != null) {
+            matched = true;
+            return {token: 'id', value: forward(id)};
+        }
 
         var num = text.match(/^[\d]+/);
-        if (num != null) return {token: 'num', value: forward(num)};
+        if (num != null) {
+            matched = true;
+            return {token: 'num', value: forward(num)};
+        }
 
         var blank = text.match(/^\/blank/);
-        if (blank != null) return {token: '/blank', value: forward(blank)};
+        if (blank != null) {
+            matched = true;
+            return {token: '/blank', value: forward(blank)};
+        }
 
         var caret = text.match(/^\^/);
-        if (caret != null) return {token: '^', value: forward(caret)};
+        if (caret != null) {
+            matched = true;
+            return {token: '^', value: forward(caret)};
+        }
 
         var underline = text.match(/^_/);
-        if (underline != null) return {token: '_', value: forward(underline)};
+        if (underline != null) {
+            matched = true;
+            return {token: '_', value: forward(underline)};
+        }
 
         var dollar = text.match(/^\$\$/);
-        if (dollar != null) return {token: '$$', value: forward(dollar)};
+        if (dollar != null) {
+            matched = true;
+            return {token: '$$', value: forward(dollar)};
+        }
 
         var lBrace = text.match(/^\(/);
-        if (lBrace != null ) return {token: '(', value: forward(lBrace)};
+        if (lBrace != null ) {
+            matched = true;
+            return {token: '(', value: forward(lBrace)};
+        }
 
         var rBrace = text.match(/^\)/);
-        if (rBrace != null ) return {token: ')', value: forward(rBrace)};
+        if (rBrace != null ) {
+            matched = true;
+            return {token: ')', value: forward(rBrace)};
+        }
 
         var lBracket = text.match(/^\{/);
-        if (lBracket != null ) return {token: '{', value: forward(lBracket)};
+        if (lBracket != null ) {
+            matched = true;
+            return {token: '{', value: forward(lBracket)};
+        }
 
         var rBracket = text.match(/^}/);
-        if (rBracket != null ) return {token: '}', value: forward(rBracket)};
+        if (rBracket != null ) {
+            matched = true;
+            return {token: '}', value: forward(rBracket)};
+        }
+
+        if (!matched) {
+
+        }
 
         function forward(symbol) {
             text = text.substr(symbol[0].length, text.length);
             return symbol[0];
         }
     }
+
     while(text.length > 0) {
+        matched = false;
         lexOut.push(nextToken());
+
+        if (!matched) {
+            console.log("Invalid character!");
+            lexOut = [];
+            break;
+        }
     }
     lexOut.push({token: '\n', value: '\n'});
     return lexOut;
 };
-var STREAM = LEXER();
-console.log(STREAM);
