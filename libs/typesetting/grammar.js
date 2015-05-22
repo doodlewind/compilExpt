@@ -172,7 +172,7 @@ var GRAMMAR = [
 
             // handle sup arguments
             args['y'] = y + size * 3 / 5;
-            args['size'] = size / 2;
+            args['size'] = size * 2 / 3;;
             var childB = node.children[1];
             return traversal(childB, args['x'], args['y'], args['size']);
         }
@@ -194,7 +194,7 @@ var GRAMMAR = [
 
             // handel sub arguments
             args['y'] = y - size * 2 / 5;
-            args['size'] = size / 2;
+            args['size'] = size * 2 / 3;
             var childB = node.children[1];
             return traversal(childB, args['x'], args['y'], args['size']);
         }
@@ -226,7 +226,7 @@ var GRAMMAR = [
             OUTPUT += newLine(x, y, size, nodeText);
 
             return {
-                'x': x + nodeText.length * size - size / 2,
+                'x': x + nodeText.length * size / 2,
                 'y': y,
                 'size': size
             };
@@ -245,7 +245,7 @@ var GRAMMAR = [
             OUTPUT += newLine(x, y, size, nodeText);
 
             return {
-                'x': x + nodeText.length * size - size / 2,
+                'x': x + nodeText.length * size / 2,
                 'y': y,
                 'size': size
             };
@@ -253,10 +253,13 @@ var GRAMMAR = [
     },
     {
         'from': S['R'], 'to': [S['/blank']],
-        'action': function () {},
+        'action': function () {
+            var rNode = newNode('R', '', 9);
+            NODES.push(rNode);
+        },
         'calc': function(node, x, y, size) {
             return {
-                'x': x + size,
+                'x': x + size / 2,
                 'y': y,
                 'size': size
             };
@@ -279,7 +282,7 @@ var GRAMMAR = [
 
             OUTPUT += newLine(args['x'], y, size, ')');
             return {
-                'x': args['x'] + size,
+                'x': args['x'] + size / 2,
                 'y': y,
                 'size': size
             };

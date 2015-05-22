@@ -2,6 +2,9 @@
 //240,250,30,a
 //260,265,20,2
 var RENDER = function(ctx) {
+    if (window.innerWidth < 400)
+        var SIZE = 32;
+    else SIZE = 64;
 
     try {
         var stream = getInput();
@@ -47,7 +50,7 @@ var RENDER = function(ctx) {
 
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i].split(',');
-            ctx.font= line[2] + "px Courier";
+            ctx.font= line[2] + "px Courier New";
 
             var symbol = line[3];
             if (symbol === "##")
