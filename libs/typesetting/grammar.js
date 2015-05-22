@@ -71,112 +71,218 @@ var S = {
 var GRAMMAR = [
     {
         'from': S['S'], 'to': [S['$$'],  S['B'], S['$$']],
-        'action': function () {}
+        'action': function () {
+            var bNode = NODES.pop();
+            var sNode = newNode('S', '', 0);
+            addChild(sNode, bNode);
+
+            AST = sNode;
+        },
+        'calc': function(node, x, y, size) {
+            var childB = node.children[0];
+            traversal(childB, x, y, size);
+            return OUTPUT;
+        }
     },
     {
         'from': S['B'], 'to': [S['T'], S['B']],
-        'action': function () {}
+        'action': function () {
+            var bNode1 = NODES.pop();
+            var tNode = NODES.pop();
+
+            var bNode = newNode('B', '', 1);
+            addChild(bNode, tNode);
+            addChild(bNode, bNode1);
+
+            NODES.push(bNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childT = node.children[0];
+            var args = traversal(childT, x, y, size);
+
+            var childB = node.children[1];
+            args = traversal(childB, args['x'], y, size);
+            return args;
+        }
     },
     {
         'from': S['B'], 'to': [S['T']],
-        'action': function () {}
+        'action': function () {
+            var tNode = NODES.pop();
+            var bNode = newNode('B', '', 2);
+            addChild(bNode, tNode);
+
+            NODES.push(bNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childT = node.children[0];
+            return traversal(childT, x, y, size);
+        }
     },
     {
         'from': S['T'], 'to': [S['R'], S['_'], S['^'], S['{'], S['B'], S['}'], S['{'], S['B'], S['}']],
         'action': function () {
-            //console.log(SYMBOLS);
+            var bNode2 = NODES.pop();
+            var bNode1 = NODES.pop();
+            var rNode = NODES.pop();
+            var tNode = newNode('T', '', 3);
+            addChild(tNode, rNode);
+            addChild(tNode, bNode1);
+            addChild(tNode, bNode2);
 
-            var b2 = SYMBOLS.pop().toString();
-            //var X_SHIFT = b2.length * 10;
+            NODES.push(tNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childR = node.children[0];
+            var args = traversal(childR, x, y, size);
 
-            var b1 = SYMBOLS.pop().toString();
-            //X_SHIFT = b1.length * 10;
+            // handle sup arguments
+            var supY = y + size * 3 / 5;
+            var supSize = size * 2 / 3;
+            var childB1 = node.children[1];
+            var argsSup = traversal(childB1, args['x'], supY, supSize);
 
-            var r = SYMBOLS.pop().toString();
-            X_SHIFT = r.length * 16;
+            // handel sub arguments
+            var subY = y - size * 2 / 5;
+            var subSize = size * 2 / 3;
+            var childB2 = node.children[2];
+            var argsSub = traversal(childB2, args['x'], subY, subSize);
 
-            OUTPUT += newLine(X_BASE, Y_BASE, 30, r);
-
-            OUTPUT += newLine(X_BASE + X_SHIFT, Y_BASE + 18, 16, b1);
-            OUTPUT += newLine(X_BASE + X_SHIFT, Y_BASE - 14, 16, b2);
-
-            X_BASE += r.length * 16 + Math.max(b1.length, b2.length) * 8;
+            return {
+                'x': Math.max(argsSup['x'], argsSub['x']),
+                'y': y,
+                'size': size
+            }
         }
     },
     {
         'from': S['T'], 'to': [S['R'], S['^'], S['{'], S['B'], S['}']],
         'action': function () {
-            var b = SYMBOLS.pop().toString();
-            var r = SYMBOLS.pop().toString();
-            X_SHIFT = r.length * 16;
+            var bNode = NODES.pop();
+            var rNode = NODES.pop();
+            var tNode = newNode('T', '', 4);
+            addChild(tNode, rNode);
+            addChild(tNode, bNode);
 
-            OUTPUT += newLine(X_BASE, Y_BASE, 30, r);
-            OUTPUT += newLine(X_BASE + X_SHIFT, Y_BASE + 18, 16, b);
+            NODES.push(tNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childR = node.children[0];
+            var args = traversal(childR, x, y, size);
 
-            X_BASE += r.length * 16 + b.length * 8;
+            // handle sup arguments
+            args['y'] = y + size * 3 / 5;
+            args['size'] = size / 2;
+            var childB = node.children[1];
+            return traversal(childB, args['x'], args['y'], args['size']);
         }
     },
     {
         'from': S['T'], 'to': [S['R'], S['_'], S['{'], S['B'], S['}']],
         'action': function () {
-            var b = SYMBOLS.pop().toString();
-            var r = SYMBOLS.pop().toString();
-            X_SHIFT = r.length * 16;
+            var bNode = NODES.pop();
+            var rNode = NODES.pop();
+            var tNode = newNode('T', '', 5);
+            addChild(tNode, rNode);
+            addChild(tNode, bNode);
 
-            OUTPUT += newLine(X_BASE, Y_BASE, 30, r);
-            OUTPUT += newLine(X_BASE + X_SHIFT, Y_BASE - 14, 16, b);
+            NODES.push(tNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childR = node.children[0];
+            var args = traversal(childR, x, y, size);
 
-            X_BASE += r.length * 16 + b.length * 8;
+            // handel sub arguments
+            args['y'] = y - size * 2 / 5;
+            args['size'] = size / 2;
+            var childB = node.children[1];
+            return traversal(childB, args['x'], args['y'], args['size']);
         }
     },
     {
         'from': S['T'], 'to': [S['R']],
         'action': function () {
-            //var r = SYMBOLS.pop().toString();
-            //X_SHIFT = r.length * 15;
-            //
-            //OUTPUT += newLine(X_BASE, Y_BASE, 30, r);
-            //X_BASE += r.length * 15;
+            var rNode = NODES.pop();
+            var tNode = newNode('T', '', 6);
+            addChild(tNode, rNode);
 
-
-            //var stackOut = "";
-            //for (var i = 0; i < STACK.length; i++) {
-            //    stackOut += "[" + STACK[i][0] + "-" + STACK[i][1] + "] ";
-            //}
-            //console.log(stackOut);
-            //console.log(SYMBOLS);
-            //console.log("");
-            //stackOut = "";
+            NODES.push(tNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childR = node.children[0];
+            return traversal(childR, x, y, size);
         }
     },
     {
         'from': S['R'], 'to': [S['id']],
         'action': function () {
-            var id = STACK.top(0)[1];
-            //console.log(STACK);
-            //console.log("R->id: " + id);
-            SYMBOLS.push(id);
-            //OUTPUT += newLine(200, 300, 30, id);
+            var id = STACK.top(0)[1].toString();
+            var rNode = newNode('R', id, 7);
+
+            NODES.push(rNode);
+        },
+        'calc': function(node, x, y, size) {
+            var nodeText = node.value;
+            OUTPUT += newLine(x, y, size, nodeText);
+
+            return {
+                'x': x + nodeText.length * size - size / 2,
+                'y': y,
+                'size': size
+            };
         }
     },
     {
         'from': S['R'], 'to': [S['num']],
         'action': function () {
-            var num = STACK.top(0)[1];
-            //console.log("R->num: " + num);
-            SYMBOLS.push(num);
+            var num = STACK.top(0)[1].toString();
+            var rNode = newNode('R', num, 8);
+
+            NODES.push(rNode);
+        },
+        'calc': function(node, x, y, size) {
+            var nodeText = node.value;
+            OUTPUT += newLine(x, y, size, nodeText);
+
+            return {
+                'x': x + nodeText.length * size - size / 2,
+                'y': y,
+                'size': size
+            };
         }
     },
     {
         'from': S['R'], 'to': [S['/blank']],
-        'action': function () {
-            X_BASE += 10;
+        'action': function () {},
+        'calc': function(node, x, y, size) {
+            return {
+                'x': x + size,
+                'y': y,
+                'size': size
+            };
         }
     },
     {
         'from': S['R'], 'to': [S['('], S['B'], S[')']],
         'action': function () {
+            var bNode = NODES.pop();
+            var rNode = newNode('R', '', 10);
+            addChild(rNode, bNode);
 
+            NODES.push(rNode);
+        },
+        'calc': function(node, x, y, size) {
+            var childB = node.children[0];
+
+            OUTPUT += newLine(x, y, size, '(');
+            var args = traversal(childB, x + size / 2, y, size);
+
+            OUTPUT += newLine(args['x'], y, size, ')');
+            return {
+                'x': args['x'] + size,
+                'y': y,
+                'size': size
+            };
         }
     }
 ];

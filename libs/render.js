@@ -3,9 +3,25 @@
 //260,265,20,2
 var RENDER = function(ctx) {
 
-    var stream = getInput();
-    var output = parse(stream);
-    show(output);
+    try {
+        var stream = getInput();
+        parse(stream);
+        var output = traversal(AST, X_BASE, Y_BASE, SIZE);
+        show(output);
+
+    } catch (e) {
+        show(e);
+
+    } finally {
+        // reset global variables
+        STACK = [[0, ""]];
+        SYMBOLS = [];
+        NODES = [];
+        AST = {};
+        OUTPUT = "";
+        X_BASE = 20;
+        Y_BASE = 100;
+    }
 
     function getInput() {
         var INPUT = document.getElementById("input").value;
@@ -15,7 +31,6 @@ var RENDER = function(ctx) {
     function parse(STREAM) {
         // STATE and ACTION implicitly used
         PARSE(STREAM, STACK, STATE, ACTION);
-        return OUTPUT;
     }
     function show(OUTPUT) {
         //var lines = OUTPUT;
@@ -32,7 +47,7 @@ var RENDER = function(ctx) {
 
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i].split(',');
-            ctx.font= line[2] + "px Georgia";
+            ctx.font= line[2] + "px Courier";
 
             var symbol = line[3];
             if (symbol === "##")
@@ -47,11 +62,4 @@ var RENDER = function(ctx) {
             ctx.fillText(symbol, line[0], HEIGHT-line[1]);
         }
     }
-
-    // reset global variables
-    STACK = [[0, ""]];
-    SYMBOLS = [];
-    OUTPUT = "";
-    X_BASE = 240;
-    Y_BASE = 100;
 };

@@ -71,10 +71,6 @@ var LEXER = function(text) {
             return {token: '}', value: forward(rBracket)};
         }
 
-        if (!matched) {
-
-        }
-
         function forward(symbol) {
             text = text.substr(symbol[0].length, text.length);
             return symbol[0];
@@ -86,9 +82,8 @@ var LEXER = function(text) {
         lexOut.push(nextToken());
 
         if (!matched) {
-            console.log("Invalid character!");
             lexOut = [];
-            break;
+            throw "Lex error on '"+ text[0] + "'";
         }
     }
     lexOut.push({token: '\n', value: '\n'});
