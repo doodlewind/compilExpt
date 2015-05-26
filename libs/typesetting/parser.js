@@ -1,37 +1,17 @@
-// global helper functions
-
-Array.prototype.top = function(i) {
-    if (i < 0) i = -i;
-    return this[this.length - 1 - i];
-};
-var newLine = function(x, y, size, val) {
-    return [x, y, size, val].join(',') + '\n';
-};
-var printReduction = function (production) {
-    var tmp = "";
-    tmp += production['from'].str + " ->";
-
-    for (var i = 0; i < production['to'].length; i++) {
-        tmp += " " + production['to'][i].str;
-    }
-    console.log(tmp);
-};
-
 var STACK = [[0, ""]];
 var SYMBOLS = [];
+var NODES = [];
+var AST = {};
 var OUTPUT = "";
-var X_BASE = 240;
+var X_BASE = 0;
 var Y_BASE = 100;
+var SIZE = 64;
 
 var PARSE = function(STREAM, STACK, STATE, ACTION) {
-
-    var baseX = 200;
-    var exp, expS;
     var i = 0;
     while (true) {
         if (i > STREAM.length - 1) {
-            console.log("Parsing Outbound!");
-            return;
+            throw "Parsing Outbound!";
         }
 
         var symbol = STREAM[i];
@@ -47,8 +27,7 @@ var PARSE = function(STREAM, STACK, STATE, ACTION) {
         else {
             if (a === '\n')
                 a = 'End Symbol($$)';
-            console.log("Error on " + a + ", Abort");
-            return;
+            throw "Parse Error on " + a;
         }
 
         var index = ACTION[s][a][1];
@@ -62,7 +41,7 @@ var PARSE = function(STREAM, STACK, STATE, ACTION) {
             var beta = GRAMMAR[index]['to'].length;
             var A = GRAMMAR[index]['from'].str;
 
-            printReduction(GRAMMAR[index]);
+            //printReduction(GRAMMAR[index]);
             GRAMMAR[index]['action']();
 
             // pop chars according to value of beta
@@ -74,15 +53,11 @@ var PARSE = function(STREAM, STACK, STATE, ACTION) {
             STACK.push(item);
         }
         else if (act === 'ACC') {
-            //console.log(GRAMMAR[index]);
-            //eval(GRAMMAR[index]['action']);
-            STACK = [[0, ""]];
-            SYMBOLS = [];
+            GRAMMAR[index]['action']();
             break;
         }
         else {
-            console.log("Except $$ on end!");
-            return;
+            throw "Except $$ on end!";
         }
     }
 };

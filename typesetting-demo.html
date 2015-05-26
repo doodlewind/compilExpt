@@ -2,26 +2,48 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name=”apple-mobile-web-app-status-bar-style” content=”black-translucent” />
+    <meta name="format-detection" content="telephone=no"/>
     <title>Typesetting Demo</title>
     <script src="libs/typesetting/lexer.js"></script>
     <script src="libs/typesetting/grammar.js"></script>
     <script src="libs/table-builder.js"></script>
+    <script src="libs/typesetting/helper.js"></script>
     <script src="libs/typesetting/parser.js"></script>
+    <script src="libs/typesetting/calculator.js"></script>
     <script src="libs/render.js"></script>
     <script>
        window.onload = function() {
            var go = document.getElementById("btn-go");
-           go.onclick = function() {
+           var exec = function() {
                var out = document.getElementById("out");
                var ctx = out.getContext("2d");
                RENDER(ctx);
            };
+           go.onclick = exec;
+           // calculate if hash is not null
+           if (window.location.hash !== "") {
+               var demoInput = window.location.hash.replace("#", "");
+               var input = document.getElementById("input");
+               input.value = demoInput;
+               if (demoInput !== "") exec();
+           }
        };
     </script>
     <style>
         html {
             background-color: lightgray;
-            padding-top: 40px;
+            padding-top: 20px;
+        }
+        body {
+            font-family: "Courier New", monospace;
+        }
+        html body {
+            max-width: 100%;
+            overflow-x: hidden;
         }
         #main {
             background-color: white;
@@ -31,10 +53,10 @@
             margin: auto;
             max-width: 550px;
             min-height: 400px;
-            font-family: serif;
         }
         h2 {
             margin-top: 0;
+            font-weight: lighter;
         }
         p {
             line-height: 0;
@@ -48,12 +70,25 @@
         }
         #btn-go {
             float: right;
+            font-size: 1em;
+            font-family: "Courier New", monospace;
+            height: 2em;
+            width: 5em;
+            background: transparent;
+            border: 1px black solid;
+            transition: 0.3s;
+        }
+        #btn-go:hover {
+            background: black;
+            color: white;
+            transition: 0.3s;
         }
         #output, #input {
             margin: 2px;
             width: 90%;
             border: 1px lightgray solid;
             height: 6rem;
+            font-family: "Courier New", monospace;
         }
     </style>
 </head>
@@ -64,7 +99,7 @@
     <div style="clear: both;"></div>
     <div class="input-panel">
         <p>Input</p>
-        <textarea id="input">$$a_^{2}{i}b$$</textarea>
+        <textarea id="input"></textarea>
     </div>
     <div class="input-panel">
         <p>Output</p>
