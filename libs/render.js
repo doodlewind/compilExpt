@@ -1,8 +1,7 @@
-// TODO: Render formula according to compile output
-//240,250,30,a
-//260,265,20,2
 var RENDER = function(ctx) {
-    if (window.innerWidth < 400)
+    var WIDTH = 500;
+    var HEIGHT = 200;
+    if (window.innerWidth < 500)
         var SIZE = 32;
     else SIZE = 64;
 
@@ -10,10 +9,11 @@ var RENDER = function(ctx) {
         var stream = getInput();
         parse(stream);
         var output = traversal(AST, X_BASE, Y_BASE, SIZE);
+        output = middle(output);
         show(output);
 
     } catch (e) {
-        show(e);
+        log(e);
 
     } finally {
         // reset global variables
@@ -22,7 +22,7 @@ var RENDER = function(ctx) {
         NODES = [];
         AST = {};
         OUTPUT = "";
-        X_BASE = 20;
+        X_BASE = 0;
         Y_BASE = 100;
     }
 
@@ -35,18 +35,17 @@ var RENDER = function(ctx) {
         // STATE and ACTION implicitly used
         PARSE(STREAM, STACK, STATE, ACTION);
     }
-    function show(OUTPUT) {
-        //var lines = OUTPUT;
-        //console.log(OUTPUT);
+    function log(message) {
         var outputBox = document.getElementById("output");
-        outputBox.value = OUTPUT;
-
-        var lines = OUTPUT.split("\n");
-        //console.log(lines);
-        var WIDTH = 500;
-        var HEIGHT = 200;
+        outputBox.value = message;
+    }
+    function show(OUTPUT) {
         ctx.canvas.width = WIDTH;
         ctx.canvas.height = HEIGHT;
+
+        var lines = OUTPUT.split("\n");
+        var outputBox = document.getElementById("output");
+        outputBox.value = OUTPUT;
 
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i].split(',');
@@ -64,5 +63,30 @@ var RENDER = function(ctx) {
 
             ctx.fillText(symbol, line[0], HEIGHT-line[1]);
         }
+    }
+    function middle(OUTPUT) {
+        if (!OUTPUT) {
+
+        }
+        var lines = OUTPUT.split('\n');
+        var lastLine = lines[lines.length - 2].split(',');
+        // index of last line is length - 2 due to an extra \n
+        var endX = parseFloat(lastLine[0]) + parseFloat(lastLine[2]) * lastLine[3].length;
+
+        if (endX < WIDTH * 2) {
+            var offset = WIDTH / 2 - endX / 2;
+            console.log(endX);
+            console.log(offset);
+            OUTPUT = "";
+            for (var i = 0; i < lines.length - 1; i++) {
+                var line = lines[i].split(',');
+                line[0] = parseFloat(line[0]) + offset;
+                OUTPUT += line.join(',') + "\n";
+            }
+        }
+        else {
+            throw "too long!";
+        }
+        return OUTPUT;
     }
 };

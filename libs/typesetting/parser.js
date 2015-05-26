@@ -3,7 +3,7 @@ var SYMBOLS = [];
 var NODES = [];
 var AST = {};
 var OUTPUT = "";
-var X_BASE = 20;
+var X_BASE = 0;
 var Y_BASE = 100;
 var SIZE = 64;
 

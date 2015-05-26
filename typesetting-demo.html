@@ -2,6 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name=”apple-mobile-web-app-status-bar-style” content=”black-translucent” />
+    <meta name="format-detection" content="telephone=no"/>
     <title>Typesetting Demo</title>
     <script src="libs/typesetting/lexer.js"></script>
     <script src="libs/typesetting/grammar.js"></script>
@@ -13,11 +18,19 @@
     <script>
        window.onload = function() {
            var go = document.getElementById("btn-go");
-           go.onclick = function() {
+           var exec = function() {
                var out = document.getElementById("out");
                var ctx = out.getContext("2d");
                RENDER(ctx);
            };
+           go.onclick = exec;
+           // calculate if hash is not null
+           if (window.location.hash !== "") {
+               var demoInput = window.location.hash.replace("#", "");
+               var input = document.getElementById("input");
+               input.value = demoInput;
+               if (demoInput !== "") exec();
+           }
        };
     </script>
     <style>
@@ -27,6 +40,10 @@
         }
         body {
             font-family: "Courier New", monospace;
+        }
+        html body {
+            max-width: 100%;
+            overflow-x: hidden;
         }
         #main {
             background-color: white;
@@ -62,7 +79,8 @@
             transition: 0.3s;
         }
         #btn-go:hover {
-            width: 6em;
+            background: black;
+            color: white;
             transition: 0.3s;
         }
         #output, #input {
@@ -81,7 +99,7 @@
     <div style="clear: both;"></div>
     <div class="input-panel">
         <p>Input</p>
-        <textarea id="input">$$x_{i}y_^{2}{j}(z^{e})_{by^{ewind}}$$</textarea>
+        <textarea id="input"></textarea>
     </div>
     <div class="input-panel">
         <p>Output</p>
