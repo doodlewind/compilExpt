@@ -42,6 +42,14 @@ var BUILD = function (S, GRAMMAR) {
         }
     };
 
+    // add special symbols to S
+    S['ACC'] = {'type': 'ACC'};
+    S['●'] = {'type': '●'};
+    S['\n'] = {'type': '\n'};
+    for (var s in S) {
+        S[s]['str'] = s;
+    }
+
     var AUGMENT = [[GRAMMAR[0]['from']].concat([S['●']]).concat(GRAMMAR[0]['to'])];
     var FIRST = {};
     var FOLLOW = {};

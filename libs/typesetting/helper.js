@@ -4,7 +4,11 @@ Array.prototype.top = function(i) {
     return this[this.length - 1 - i];
 };
 var newLine = function(x, y, size, val) {
-    return [x, y, size, val].join(',') + '\n';
+    return [fix(x), fix(y), fix(size), val].join(',') + '\n';
+
+    function fix(x) {
+        return Math.round (x * 1000) / 1000;
+    }
 };
 var printReduction = function (production) {
     var tmp = "";

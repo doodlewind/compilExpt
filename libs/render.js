@@ -52,15 +52,6 @@ var RENDER = function(ctx) {
             ctx.font= line[2] + "px Courier New";
 
             var symbol = line[3];
-            if (symbol === "##")
-                symbol = "#";
-            //if (symbol === "#sum")
-            //    symbol = "∑";
-            //else if (symbol === "#int")
-            //    symbol = "∫";
-            //else if (symbol === "##")
-            //    symbol = "#";
-
             ctx.fillText(symbol, line[0], HEIGHT-line[1]);
         }
     }
@@ -75,8 +66,8 @@ var RENDER = function(ctx) {
 
         if (endX < WIDTH * 2) {
             var offset = WIDTH / 2 - endX / 2;
-            console.log(endX);
-            console.log(offset);
+            // console.log(endX);
+            // console.log(offset);
             OUTPUT = "";
             for (var i = 0; i < lines.length - 1; i++) {
                 var line = lines[i].split(',');
