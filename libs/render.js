@@ -1,7 +1,7 @@
 var RENDER = function(ctx) {
     var WIDTH = 500;
     var HEIGHT = 200;
-    if (window.innerWidth < 500)
+    if (window.innerWidth < 900)
         var SIZE = 32;
     else SIZE = 64;
 

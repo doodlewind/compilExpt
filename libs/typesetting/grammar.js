@@ -260,7 +260,7 @@ var gR2Id = {
         OUTPUT += newLine(x, y, size, nodeText);
 
         return {
-            'x': x + nodeText.length * size / 2,
+            'x': x + nodeText.length * size / 1.7,
             'y': y,
             'size': size
         };
@@ -279,7 +279,7 @@ var gR2Num = {
         OUTPUT += newLine(x, y, size, nodeText);
 
         return {
-            'x': x + nodeText.length * size / 2,
+            'x': x + nodeText.length * size / 1.7,
             'y': y,
             'size': size
         };
